@@ -1,15 +1,38 @@
 package houyaa.http;
 
-import java.util.List;
-import java.util.Map;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpVersion;
+
+import java.nio.charset.StandardCharsets;
 
 public class Request {
 
     private Method method;
     private String uri;
-    private Map<String, List<String>> headers;
-    private Map<String, Object> params;
-    private Map<String, Object> jsonBody;
+    private ChannelHandlerContext ctx;
+    private FullHttpRequest fullHttpRequest;
+
+    public FullHttpRequest getFullHttpRequest() {
+        return fullHttpRequest;
+    }
+
+    public void setFullHttpRequest(FullHttpRequest fullHttpRequest) {
+        this.fullHttpRequest = fullHttpRequest;
+    }
+
+    public ChannelHandlerContext getCtx() {
+        return ctx;
+    }
+
+    public void setCtx(ChannelHandlerContext ctx) {
+        this.ctx = ctx;
+    }
 
     public Method getMethod() {
         return method;
@@ -27,27 +50,22 @@ public class Request {
         this.uri = uri;
     }
 
-    public Map<String, List<String>> getHeaders() {
-        return headers;
+    private void text(String text, String contentType) {
+        ByteBuf buf = ByteBufAllocator.DEFAULT.buffer();
+        byte[] bytes = text.getBytes(StandardCharsets.UTF_8);
+        buf.writeBytes(bytes);
+        DefaultFullHttpResponse res = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,
+                HttpResponseStatus.valueOf(200), buf);
+        res.headers().add(HttpHeaderNames.CONTENT_TYPE, String.format("%s; charset=utf-8", contentType));
+        res.headers().add(HttpHeaderNames.CONTENT_LENGTH, bytes.length);
+        getCtx().writeAndFlush(res);
     }
 
-    public void setHeaders(Map<String, List<String>> headers) {
-        this.headers = headers;
+    public void json(String text) {
+        text(text, "application/json");
     }
 
-    public Map<String, Object> getParams() {
-        return params;
-    }
-
-    public void setParams(Map<String, Object> params) {
-        this.params = params;
-    }
-
-    public Map<String, Object> getJsonBody() {
-        return jsonBody;
-    }
-
-    public void setJsonBody(Map<String, Object> jsonBody) {
-        this.jsonBody = jsonBody;
+    public void text(String text) {
+        text(text, "text/plain");
     }
 }

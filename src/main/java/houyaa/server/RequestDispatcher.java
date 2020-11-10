@@ -2,6 +2,8 @@ package houyaa.server;
 
 import houyaa.http.Method;
 import houyaa.http.Request;
+import houyaa.route.Route;
+import houyaa.route.RouterManager;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -19,12 +21,7 @@ public class RequestDispatcher {
     }
 
     private void doDispatch(Request request) {
-        if (request.getMethod().equals(Method.GET)) {
-
-        } else if (request.getMethod().equals(Method.POST)) {
-
-        } else {
-
-        }
+        Route route = RouterManager.get(request.getUri(), request.getMethod());
+        route.getHandler().handel(request);
     }
 }

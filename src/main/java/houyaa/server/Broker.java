@@ -10,23 +10,20 @@ public class Broker {
 
     private EmbeddedServer embeddedServer;
 
-    private RouterManager routerManager;
-
     public void start(){
         if (embeddedServer == null) {
             embeddedServer = new NettyServer();
         }
         embeddedServer.start();
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            embeddedServer.stop();
+        }));
     }
 
     public void addHandler(String path, Method method, Handler handler) {
         Route route = new Route(path, method, handler);
-        routerManager.add(route);
-    }
-
-
-    public EmbeddedServer getEmbeddedServer() {
-        return embeddedServer;
+        RouterManager.add(route);
     }
 
     public void setEmbeddedServer(EmbeddedServer embeddedServer) {

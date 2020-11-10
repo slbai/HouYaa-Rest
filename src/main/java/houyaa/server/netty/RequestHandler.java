@@ -14,10 +14,14 @@ public class RequestHandler extends SimpleChannelInboundHandler<FullHttpRequest>
 
     private RequestDispatcher dispatcher;
 
+    public RequestHandler(RequestDispatcher dispatcher) {
+        this.dispatcher = dispatcher;
+    }
+
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest msg) throws Exception {
+    protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest fullHttpRequest) throws Exception {
         Request request = new Request();
-        HttpMethod method = msg.method();
+        HttpMethod method = fullHttpRequest.method();
         if (HttpMethod.GET.equals(method)) {
             request.setMethod(Method.GET);
         } else if (HttpMethod.POST.equals(method)) {
@@ -25,7 +29,15 @@ public class RequestHandler extends SimpleChannelInboundHandler<FullHttpRequest>
         } else {
             ctx.writeAndFlush("method not support");
         }
-        request.setUri(msg.uri());
+        request.setUri(fullHttpRequest.uri());
+        request.setCtx(ctx);
+        request.setFullHttpRequest(fullHttpRequest);
         dispatcher.dispatch(request);
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        cause.printStackTrace();
+        super.exceptionCaught(ctx, cause);
     }
 }

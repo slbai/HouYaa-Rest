@@ -13,6 +13,10 @@ public class HouYaa {
         broker.addHandler(path, Method.GET, handler);
     }
 
+    public static void post(String path, Handler handler) {
+        broker.addHandler(path, Method.POST, handler);
+    }
+
     public static void start(EmbeddedServer embeddedServer) {
         broker.setEmbeddedServer(embeddedServer);
         broker.start();
